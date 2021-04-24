@@ -1,6 +1,6 @@
 package org.birchavenue.zendesk2021
 
-import io.circe.Json
+import io.circe.Error
 import org.birchavenue.zendesk2021.Model.Organization
 
 object Main {
@@ -10,6 +10,6 @@ object Main {
       case Right((orgs, users, tickets)) => Some(new Searcher(orgs, users, tickets))
       case _ => None
     }
-    println(data)
+    println(searcher.map(_.search("organization", "shared_tickets", "false")))
   }
 }
