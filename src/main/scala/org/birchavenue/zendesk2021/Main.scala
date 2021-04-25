@@ -1,5 +1,8 @@
 package org.birchavenue.zendesk2021
 
+import scala.io.StdIn.readLine
+import scala.util.control.Breaks.{break, breakable}
+
 object Main {
 
   def parseOptions(args: Array[String]): Option[Config] = {
@@ -10,12 +13,6 @@ object Main {
       OParser.sequence(
         programName("zendesk2021"),
         head("zendesk2021", "1.0"),
-        arg[String]("field")
-          .action((x, c) => c.copy(field = x))
-          .text("Field to search on e.g. organization._id"),
-        arg[String]("value")
-          .action((x, c) => c.copy(value = x))
-          .text("Value to search on e.g. 103"),
       )
     }
     OParser.parse(parser1, args, Config("", ""))
@@ -28,10 +25,10 @@ object Main {
       case Right((orgs, users, tickets)) => Some(new Searcher(orgs, users, tickets))
       case _ => None
     }
-    val result = for {
-      s <- searcher
-      c <- config
-    } yield s.search(c.field, c.value)
-    println(result)
+
+    searcher match {
+      case Some(s) => val interpreter = new Interpreter(s); interpreter.run
+      case None =>
+    }
   }
 }
