@@ -30,20 +30,14 @@ class Interpreter(searcher: Searcher) {
       |
       |""".stripMargin
 
-  // Input token matching Regexs
-  val searchRE = "search (\\w*)\\.(\\w*) *\"?([^\"]*)\"?".r // Allow search term to be quoted or unquoted
-  val fieldsRE = "(fields)".r
-  val quitRE = "(quit|exit)".r
-  val helpRE = "(\\?|help)".r
-
   def run: Unit = {
     print(welcomeText)
 
     breakable {
       // Loop until quit
       while (true) {
-        readLine() match {
-          case searchRE(entity, field, value) =>
+        Interpreter.interpret(readLine()) match {
+          case SearchCommand(entity, field, value) =>
             searcher.search(entity, field, value) match {
               case Right(Nil) => println("No results found")
               case Right(results) => {
@@ -52,17 +46,35 @@ class Interpreter(searcher: Searcher) {
               }
               case Left(err) => println("Error: " + err)
             }
-          case fieldsRE(_) => searcher.fields match {
+          case FieldsCommand => searcher.fields match {
             case Some(fields) => println(fields)
             case None => println("Error, no data found to search")
           }
-          case helpRE(_) => println(helpText)
-          case quitRE(_) => println("bye"); break()
-          case _ => println("Unknown command, type '?' for help")
+          case HelpCommand => println(helpText)
+          case QuitCommand => println("bye"); break()
+          case UnknownCommand => println("Unknown command, type '?' for help")
         }
         print("> ") // Print next cursor and loop
       }
     }
   }
 
+}
+
+object Interpreter {
+  def interpret(cmdString: String): Command = {
+    // Input token matching Regexs
+    val searchRE = "\\s*search\\s*(\\w*)\\.(\\w*)\\s*\"?([^\"]*)\"?".r // Allow search term to be quoted or unquoted
+    val fieldsRE = "\\s*(fields)\\s*".r
+    val quitRE = "\\s*(quit|exit)\\s*".r
+    val helpRE = "\\s*(\\?|help)\\s*".r
+
+    cmdString match {
+      case searchRE(entity, field, value) => SearchCommand(entity, field, value)
+      case fieldsRE(_) => FieldsCommand
+      case helpRE(_) => HelpCommand
+      case quitRE(_) => QuitCommand
+      case _ => UnknownCommand
+    }
+  }
 }
