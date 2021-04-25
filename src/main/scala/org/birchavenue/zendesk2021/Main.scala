@@ -3,26 +3,16 @@ package org.birchavenue.zendesk2021
 object Main {
   def main(args: Array[String]): Unit = {
 
-    // Parse command line option(s)
-    Config.parseOptions(args) match {
-      case Some(config) => {
-        // Load data
-        val data = Loader.load(config.dataPath)
+    // Attempt to bootstrap App with data
+    val interpreter = for {
+      config <- Config.parseOptions(args) // Load Config
+      data <- Loader.load(config.dataPath) // Load Data
+    } yield new Interpreter(new Searcher(data._1, data._2, data._3)) // Create search and interpreter
 
-        // Intialise searcher
-        val searcher: Option[Searcher] = data match {
-          case Right((orgs, users, tickets)) => Some(new Searcher(orgs, users, tickets))
-          case _ => None
-        }
-
-        // Start text interpreter
-        searcher match {
-          case Some(s) => val interpreter = new Interpreter(s); interpreter.run
-          case None =>
-        }
-      }
-      case None => println("Incorrect command line arguments, exiting")
+    // Quit with errors or launch search interface
+    interpreter match {
+      case Left(err) => println("Error starting search program\n" + err)
+      case Right(i) => i.run
     }
   }
-
 }

@@ -5,16 +5,16 @@ case class Ticket(_id: String, url: String, external_id: String, created_at: Str
                   assignee_id: Option[Long], organization_id: Option[Long], tags: List[String], has_incidents: Boolean,
                   due_at: Option[String], via: String) extends Entity
 {
-  val fieldNames = this.productElementNames.toList
-  val fieldValues = this.productIterator.toList.map(_.toString)
+  val fieldNames: List[String] = this.productElementNames.toList
+  private val fieldValues = this.productIterator.toList.map(_.toString)
 
   // column output offset
-  val offset = fieldNames.map(_.length).sorted.reverse.headOption.map(_ + 3).getOrElse(20)
+  private val offset = fieldNames.map(_.length).sorted.reverse.headOption.map(_ + 3).getOrElse(20)
 
   // human readable output for User
-  override val toString = fieldNames.map(s => s + (" " * (offset - s.length))).zip(fieldValues).map(s => s._1 + s._2).mkString("\n")
+  override val toString: String = fieldNames.map(s => s + (" " * (offset - s.length))).zip(fieldValues).map(s => s._1 + s._2).mkString("\n")
 
-  val toStringShort = subject
+  override def toShortString: String = _id.take(6) + "         " + subject
 
   def matches(field: String, value: String): Boolean = field match {
     case "_id" => value == this._id
@@ -30,7 +30,7 @@ case class Ticket(_id: String, url: String, external_id: String, created_at: Str
     case "assignee_id" => value.toLongOption == this.assignee_id
     case "organization_id" => value.toLongOption == this.organization_id
     case "tags" => this.tags.contains(value)
-    case "has_incidents" => value == this.has_incidents
+    case "has_incidents" => value.toBooleanOption.map(_ == this.has_incidents).getOrElse(false)
     case "due_at" => this.due_at.map(_ == value).getOrElse(value == "")
     case "via" => value == this.via
     case _ => false

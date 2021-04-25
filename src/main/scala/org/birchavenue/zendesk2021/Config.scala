@@ -3,7 +3,7 @@ package org.birchavenue.zendesk2021
 case class Config(dataPath: String)
 
 object Config {
-  def parseOptions(args: Array[String]): Option[Config] = {
+  def parseOptions(args: Array[String]): Either[String, Config] = {
     import scopt.OParser
     val builder = OParser.builder[Config]
     val parser1 = {
@@ -16,6 +16,9 @@ object Config {
       .text("relative path of data, defaults to ./data"),
       )
     }
-    OParser.parse(parser1, args, Config(".//data"))
+    OParser.parse(parser1, args, Config(".//data")) match {
+      case Some(c) => Right(c)
+      case None => Left("Incorrect command line arguments, exiting")
+    }
   }
 }

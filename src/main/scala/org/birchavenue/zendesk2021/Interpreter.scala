@@ -45,7 +45,10 @@ class Interpreter(searcher: Searcher) {
         readLine() match {
           case searchRE(entity, field, value) =>
             searcher.search(entity, field, value) match {
-              case Right(entites) => println(entites.mkString("\n----------------------\n"))
+              case Right(Nil) => println("No results found")
+              case Right(results) => {
+                println(results.map(r => r._1.toString :: r._2.map(_.toShortString)).flatten.mkString("\n"))
+              }
               case Left(err) => println("Error: " + err)
             }
           case fieldsRE(_) => searcher.fields match {
@@ -54,7 +57,7 @@ class Interpreter(searcher: Searcher) {
           }
           case helpRE(_) => println(helpText)
           case quitRE(_) => println("bye"); break
-          case _ => println("unknown command, type '?' for help")
+          case _ => println("Unknown command, type '?' for help")
         }
         print("> ")
       }
