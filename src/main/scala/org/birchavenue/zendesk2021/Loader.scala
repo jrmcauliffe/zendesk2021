@@ -21,7 +21,7 @@ object Loader {
       val text = bufferedSource.getLines().mkString
       bufferedSource.close()
       text
-    } match {
+    } match { // Map Try to Either
       case Success(s) => Right(s)
       case Failure (_) => Left("Failed to open " + filePath)
     }

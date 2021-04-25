@@ -36,17 +36,18 @@ class Interpreter(searcher: Searcher) {
   val quitRE = "(quit|exit)".r
   val helpRE = "(\\?|help)".r
 
-
-  def run {
+  def run: Unit = {
     print(welcomeText)
 
     breakable {
+      // Loop until quit
       while (true) {
         readLine() match {
           case searchRE(entity, field, value) =>
             searcher.search(entity, field, value) match {
               case Right(Nil) => println("No results found")
               case Right(results) => {
+                // Output results with supplimentary records
                 println(results.map(r => r._1.toString :: r._2.map(_.toShortString)).flatten.mkString("\n"))
               }
               case Left(err) => println("Error: " + err)
@@ -56,10 +57,10 @@ class Interpreter(searcher: Searcher) {
             case None => println("Error, no data found to search")
           }
           case helpRE(_) => println(helpText)
-          case quitRE(_) => println("bye"); break
+          case quitRE(_) => println("bye"); break()
           case _ => println("Unknown command, type '?' for help")
         }
-        print("> ")
+        print("> ") // Print next cursor and loop
       }
     }
   }
